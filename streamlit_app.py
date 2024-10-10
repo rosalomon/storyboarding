@@ -2,7 +2,7 @@ import streamlit as st
 import re
 
 # Sätt en titel för appen
-st.title("Textdelare för Storyboard - Mobilvy med ramar")
+st.title("Storyboard - Mobilvy")
 
 # Lägg till en text-area för att användaren ska kunna lägga in text
 input_text = st.text_area("Klistra in din text här:", height=300)
