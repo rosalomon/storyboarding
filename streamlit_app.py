@@ -40,32 +40,44 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# Funktion för att dela texten baserat på meningsgränser
+# Funktion för att dela texten baserat på meningsgränser och bevara formateringen
 def split_text_into_paragraphs(text, max_length=700):
-    # Dela texten vid punkt, utropstecken eller frågetecken som avslutas med ett mellanrum
-    sentences = re.split(r'(?<=[.!?]) +', text)
+    # Dela texten vid radbrytningar först
+    paragraphs = text.split('\n')
     
-    paragraphs = []
+    formatted_paragraphs = []
     current_paragraph = ""
     
-    for sentence in sentences:
-        # Om vi lägger till en mening och den totala längden fortfarande är under max_length, lägg till den i det nuvarande stycket
-        if len(current_paragraph) + len(sentence) <= max_length:
-            current_paragraph += sentence + " "
-        else:
-            # Om det nuvarande stycket är fullt, lägg till det till listan och börja ett nytt stycke
-            paragraphs.append(current_paragraph.strip())
-            current_paragraph = sentence + " "
+    for paragraph in paragraphs:
+        # Om paragrafen är tom, lägg till en tom rad
+        if not paragraph.strip():
+            formatted_paragraphs.append("")
+            continue
+        
+        # Dela paragrafen i meningar
+        sentences = re.split(r'(?<=[.!?]) +', paragraph)
+        
+        for sentence in sentences:
+            if len(current_paragraph) + len(sentence) <= max_length:
+                current_paragraph += sentence + " "
+            else:
+                formatted_paragraphs.append(current_paragraph.strip())
+                current_paragraph = sentence + " "
+        
+        # Lägg till den sista meningen i paragrafen
+        if current_paragraph:
+            formatted_paragraphs.append(current_paragraph.strip())
+            current_paragraph = ""
     
-    # Lägg till sista stycket
+    # Lägg till sista paragrafen om den finns
     if current_paragraph:
-        paragraphs.append(current_paragraph.strip())
+        formatted_paragraphs.append(current_paragraph.strip())
     
-    return paragraphs
+    return formatted_paragraphs
 
 # Kontrollera om någon text har lagts in
 if input_text:
-    # Dela texten baserat på meningsgränser och max 700 tecken per stycke
+    # Dela texten baserat på meningsgränser, radbrytningar och max 700 tecken per stycke
     paragraphs = split_text_into_paragraphs(input_text, max_length=700)
 
     # Loopa över varje stycke och visa det tillsammans med "ANNAT INNEHÅLL"
@@ -73,7 +85,7 @@ if input_text:
         # Visa stycket med en tunn linje runt det
         st.markdown(f"""
         <div class='content-box'>
-            <div class='text-output'><b>Scroll {i+1}:</b><br>{paragraph}</div>
+            <div class='text-output'><b>Scroll {i+1}:</b><br>{"<br>" if not paragraph else paragraph}</div>
             <div class="dashed-box">
                 ANNAT INNEHÅLL
             </div>
