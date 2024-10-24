@@ -35,23 +35,54 @@ st.markdown(f"""
         height: {screen_size['height']}px;
         border: 2px solid #000;
         margin: 20px auto;
-        padding: 20px;
+        padding: 0;
         overflow: hidden;
         position: relative;
         box-sizing: border-box;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }}
+    .status-bar {{
+        height: 44px;
+        background-color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 14px;
+    }}
+    .header {{
+        height: 50px;
+        background-color: #fff;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 16px;
     }}
     .content-box {{
-        font-size: 16px;
-        line-height: 1.5;
-        white-space: pre-wrap;
+        height: calc(100% - 144px);  /* Subtract status bar, header, and footer heights */
+        overflow-y: auto;
+        padding: 10px;
     }}
-    .dashed-box {{
-        border: 2px dashed #999;
-        padding: 20px;
-        text-align: center;
-        color: #666;
-        font-style: italic;
-        margin-top: 10px;
+    .article-text {{
+        font-size: 18px;
+        line-height: 1.5;
+        color: #333;
+    }}
+    .fact-box {{
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 16px;
+    }}
+    .footer {{
+        height: 50px;
+        background-color: #fff;
+        border-top: 1px solid #e0e0e0;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
     }}
     </style>
     
@@ -60,25 +91,28 @@ st.markdown(f"""
         const mobileScreen = document.querySelector('.mobile-screen');
         const contentBox = mobileScreen.querySelector('.content-box');
         const content = contentBox.innerHTML;
-        const screenHeight = mobileScreen.clientHeight;
+        const screenHeight = contentBox.clientHeight;
         
         let scrolls = [];
         let currentScroll = '';
         let tempDiv = document.createElement('div');
         tempDiv.style.cssText = window.getComputedStyle(contentBox).cssText;
-        tempDiv.style.width = contentBox.offsetWidth + 'px';
+        tempDiv.style.height = 'auto';
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.visibility = 'hidden';
         document.body.appendChild(tempDiv);
         
-        for (let line of content.split('\\n')) {{
-            tempDiv.innerHTML = currentScroll + line + '<br>';
-            if (tempDiv.offsetHeight > screenHeight - 100) {{  // 100px för marginal och "ANNAT INNEHÅLL"
-                scrolls.push(currentScroll.trim());
-                currentScroll = '';
+        for (let paragraph of content.split('\\n\\n')) {{
+            tempDiv.innerHTML = currentScroll + '<p>' + paragraph + '</p>';
+            if (tempDiv.offsetHeight > screenHeight) {{
+                scrolls.push(currentScroll);
+                currentScroll = '<p>' + paragraph + '</p>';
+            }} else {{
+                currentScroll += '<p>' + paragraph + '</p>';
             }}
-            currentScroll += line + '\\n';
         }}
         if (currentScroll) {{
-            scrolls.push(currentScroll.trim());
+            scrolls.push(currentScroll);
         }}
         
         document.body.removeChild(tempDiv);
@@ -93,8 +127,15 @@ st.markdown(f"""
             const scrollDiv = document.createElement('div');
             scrollDiv.className = 'mobile-screen';
             scrollDiv.innerHTML = `
-                <div class="content-box">${{scroll.replace(/\\n/g, '<br>')}}</div>
-                <div class="dashed-box">ANNAT INNEHÅLL</div>
+                <div class="status-bar">14:38</div>
+                <div class="header">
+                    <span>&#8592; Tillbaka</span>
+                    <span>Dela artikeln</span>
+                </div>
+                <div class="content-box">
+                    <div class="article-text">${{scroll}}</div>
+                </div>
+                <div class="footer"></div>
             `;
             container.appendChild(scrollDiv);
         }});
@@ -110,7 +151,9 @@ st.markdown(f"""
 if input_text:
     st.markdown(f"""
     <div class="mobile-screen">
-        <div class="content-box">{input_text}</div>
+        <div class="content-box">
+            <div class="article-text">{input_text.replace('\\n', '<br>')}</div>
+        </div>
     </div>
     <script>
     displayScrolls();
