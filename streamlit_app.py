@@ -42,50 +42,33 @@ st.markdown("""
 
 # Funktion för att dela texten baserat på meningsgränser och bevara formateringen
 def split_text_into_paragraphs(text, max_length=700):
-    # Dela texten vid radbrytningar först
-    paragraphs = text.split('\n')
-    
-    formatted_paragraphs = []
+    paragraphs = []
     current_paragraph = ""
     
-    for paragraph in paragraphs:
-        # Om paragrafen är tom, lägg till en tom rad
-        if not paragraph.strip():
-            formatted_paragraphs.append("")
-            continue
-        
-        # Dela paragrafen i meningar
-        sentences = re.split(r'(?<=[.!?]) +', paragraph)
-        
-        for sentence in sentences:
-            if len(current_paragraph) + len(sentence) <= max_length:
-                current_paragraph += sentence + " "
-            else:
-                formatted_paragraphs.append(current_paragraph.strip())
-                current_paragraph = sentence + " "
-        
-        # Lägg till den sista meningen i paragrafen
-        if current_paragraph:
-            formatted_paragraphs.append(current_paragraph.strip())
-            current_paragraph = ""
+    for line in text.split('\n'):
+        if len(current_paragraph) + len(line) + 1 <= max_length:  # +1 för eventuell radbrytning
+            if current_paragraph:
+                current_paragraph += '\n'
+            current_paragraph += line
+        else:
+            if current_paragraph:
+                paragraphs.append(current_paragraph)
+            current_paragraph = line
     
-    # Lägg till sista paragrafen om den finns
     if current_paragraph:
-        formatted_paragraphs.append(current_paragraph.strip())
+        paragraphs.append(current_paragraph)
     
-    return formatted_paragraphs
+    return paragraphs
 
 # Kontrollera om någon text har lagts in
 if input_text:
-    # Dela texten baserat på meningsgränser, radbrytningar och max 700 tecken per stycke
     paragraphs = split_text_into_paragraphs(input_text, max_length=700)
 
-    # Loopa över varje stycke och visa det tillsammans med "ANNAT INNEHÅLL"
     for i, paragraph in enumerate(paragraphs):
-        # Visa stycket med en tunn linje runt det
+        formatted_paragraph = paragraph.replace('\n', '<br>')
         st.markdown(f"""
         <div class='content-box'>
-            <div class='text-output'><b>Scroll {i+1}:</b><br>{"<br>" if not paragraph else paragraph}</div>
+            <div class='text-output'><b>Scroll {i+1}:</b><br>{formatted_paragraph}</div>
             <div class="dashed-box">
                 ANNAT INNEHÅLL
             </div>
