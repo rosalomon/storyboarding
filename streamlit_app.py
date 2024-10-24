@@ -23,39 +23,81 @@ screen_size = iphone_sizes[iphone_model]
 # Lägg till en text-area för att användaren ska kunna lägga in text
 input_text = st.text_area("Klistra in din text här:", height=300)
 
-# Funktion för att dela upp text i "skärmar"
-def split_into_screens(text, max_chars=700):
+def split_into_screens(text, screen_height):
     screens = []
-    paragraphs = text.split('\n\n')
-    current_screen = ""
+    lines = text.split('\n')
+    current_screen = []
+    current_height = 0
+    line_height = 20  # Uppskattad höjd för en textrad i pixlar
     
-    for paragraph in paragraphs:
-        if len(current_screen) + len(paragraph) <= max_chars:
-            current_screen += paragraph + "\n\n"
+    for line in lines:
+        line_count = max(1, len(textwrap.wrap(line, width=40)))  # Uppskatta antal rader för denna textrad
+        line_total_height = line_count * line_height
+        
+        if current_height + line_total_height > screen_height - 100:  # 100 pixlar för header och footer
+            screens.append('\n'.join(current_screen))
+            current_screen = [line]
+            current_height = line_total_height
         else:
-            screens.append(current_screen.strip())
-            current_screen = paragraph + "\n\n"
+            current_screen.append(line)
+            current_height += line_total_height
     
     if current_screen:
-        screens.append(current_screen.strip())
+        screens.append('\n'.join(current_screen))
     
     return screens
 
 if input_text:
-    screens = split_into_screens(input_text)
+    screen_height = screen_size['height']
+    screens = split_into_screens(input_text, screen_height)
     
     for i, screen in enumerate(screens):
-        with st.container():
-            st.markdown(f"**Skärm {i+1}**")
-            col1, col2, col3 = st.columns([1, 6, 1])
-            with col2:
-                
-                st.markdown("Status bar")
-                st.markdown("---")
-                st.markdown(screen)
-                st.markdown("---")
-                st.text("ANNAT INNEHÅLL")
-            st.markdown("---")
+        st.markdown(f"""
+        <div style="
+            width: {screen_size['width']}px;
+            height: {screen_size['height']}px;
+            border: 2px solid black;
+            margin: 20px auto;
+            padding: 10px;
+            overflow: hidden;
+            position: relative;
+            font-family: Arial, sans-serif;
+        ">
+            <div style="
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 40px;
+                background-color: #f0f0f0;
+                padding: 5px;
+                text-align: center;
+            ">
+                Status bar
+            </div>
+            <div style="
+                margin-top: 50px;
+                margin-bottom: 50px;
+                height: calc(100% - 100px);
+                overflow-y: auto;
+                white-space: pre-wrap;
+            ">
+                {screen}
+            </div>
+            <div style="
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 40px;
+                background-color: #f0f0f0;
+                padding: 5px;
+                text-align: center;
+            ">
+                ANNAT INNEHÅLL
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Lägg till CSS för att begränsa bredden och centrera innehållet
 st.markdown(f"""
