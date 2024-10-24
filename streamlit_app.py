@@ -24,15 +24,15 @@ screen_size = iphone_sizes[iphone_model]
 input_text = st.text_area("Klistra in din text här:", height=300)
 
 # CSS-styling och JavaScript för att simulera en mobilvy
-css_and_js = f"""
+css_and_js = """
     <style>
     .main {{
         max-width: 430px;
         margin: 0 auto;
     }}
     .mobile-screen {{
-        width: {screen_size['width']}px;
-        height: {screen_size['height']}px;
+        width: {width}px;
+        height: {height}px;
         border: 2px solid #000;
         margin: 20px auto;
         padding: 0;
