@@ -49,12 +49,12 @@ if input_text:
             st.markdown(f"**Skärm {i+1}**")
             col1, col2, col3 = st.columns([1, 6, 1])
             with col2:
-                st.text("14:38")
-                st.markdown("← Tillbaka | Dela artikeln")
+                
+                st.markdown("Status bar")
                 st.markdown("---")
                 st.markdown(screen)
                 st.markdown("---")
-                st.text("Footer")
+                st.text("ANNAT INNEHÅLL")
             st.markdown("---")
 
 # Lägg till CSS för att begränsa bredden och centrera innehållet
