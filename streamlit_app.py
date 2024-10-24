@@ -1,4 +1,5 @@
 import streamlit as st
+import textwrap
 
 # Sätt en titel för appen
 st.title("Storyboard - Mobilvy")
@@ -22,146 +23,45 @@ screen_size = iphone_sizes[iphone_model]
 # Lägg till en text-area för att användaren ska kunna lägga in text
 input_text = st.text_area("Klistra in din text här:", height=300)
 
-# CSS-styling
-css = f"""
-<style>
-.main {{
-    max-width: 430px;
-    margin: 0 auto;
-}}
-.mobile-screen {{
-    width: {screen_size['width']}px;
-    height: {screen_size['height']}px;
-    border: 2px solid #000;
-    margin: 20px auto;
-    padding: 0;
-    overflow: hidden;
-    position: relative;
-    box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-}}
-.status-bar {{
-    height: 44px;
-    background-color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 14px;
-}}
-.header {{
-    height: 50px;
-    background-color: #fff;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 16px;
-}}
-.content-box {{
-    height: calc(100% - 144px);  /* Subtract status bar, header, and footer heights */
-    overflow-y: auto;
-    padding: 10px;
-}}
-.article-text {{
-    font-size: 18px;
-    line-height: 1.5;
-    color: #333;
-}}
-.fact-box {{
-    background-color: #f0f0f0;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 16px;
-}}
-.footer {{
-    height: 50px;
-    background-color: #fff;
-    border-top: 1px solid #e0e0e0;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-}}
-</style>
-"""
-
-# JavaScript-kod
-js = """
-<script>
-function splitIntoScrolls() {
-    const mobileScreen = document.querySelector('.mobile-screen');
-    const contentBox = mobileScreen.querySelector('.content-box');
-    const content = contentBox.innerHTML;
-    const screenHeight = contentBox.clientHeight;
+# Funktion för att dela upp text i "skärmar"
+def split_into_screens(text, max_chars=700):
+    screens = []
+    paragraphs = text.split('\n\n')
+    current_screen = ""
     
-    let scrolls = [];
-    let currentScroll = '';
-    let tempDiv = document.createElement('div');
-    tempDiv.style.cssText = window.getComputedStyle(contentBox).cssText;
-    tempDiv.style.height = 'auto';
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.visibility = 'hidden';
-    document.body.appendChild(tempDiv);
+    for paragraph in paragraphs:
+        if len(current_screen) + len(paragraph) <= max_chars:
+            current_screen += paragraph + "\n\n"
+        else:
+            screens.append(current_screen.strip())
+            current_screen = paragraph + "\n\n"
     
-    for (let paragraph of content.split('\\n\\n')) {
-        tempDiv.innerHTML = currentScroll + '<p>' + paragraph + '</p>';
-        if (tempDiv.offsetHeight > screenHeight) {
-            scrolls.push(currentScroll);
-            currentScroll = '<p>' + paragraph + '</p>';
-        } else {
-            currentScroll += '<p>' + paragraph + '</p>';
-        }
-    }
-    if (currentScroll) {
-        scrolls.push(currentScroll);
-    }
+    if current_screen:
+        screens.append(current_screen.strip())
     
-    document.body.removeChild(tempDiv);
-    return scrolls;
-}
-
-function displayScrolls() {
-    const scrolls = splitIntoScrolls();
-    const container = document.getElementById('scrolls-container');
-    container.innerHTML = '';
-    scrolls.forEach((scroll, index) => {
-        const scrollDiv = document.createElement('div');
-        scrollDiv.className = 'mobile-screen';
-        scrollDiv.innerHTML = `
-            <div class="status-bar">14:38</div>
-            <div class="header">
-                <span>&#8592; Tillbaka</span>
-                <span>Dela artikeln</span>
-            </div>
-            <div class="content-box">
-                <div class="article-text">${scroll}</div>
-            </div>
-            <div class="footer"></div>
-        `;
-        container.appendChild(scrollDiv);
-    });
-}
-
-window.addEventListener('load', displayScrolls);
-window.addEventListener('resize', displayScrolls);
-</script>
-"""
-
-# Rendera CSS och JavaScript
-st.markdown(css, unsafe_allow_html=True)
-st.markdown(js, unsafe_allow_html=True)
+    return screens
 
 if input_text:
-    st.markdown(f"""
-    <div id="scrolls-container">
-        <div class="mobile-screen">
-            <div class="content-box">
-                <div class="article-text">{input_text.replace('\n', '<br>')}</div>
-            </div>
-        </div>
-    </div>
-    <script>
-    displayScrolls();
-    </script>
-    """, unsafe_allow_html=True)
+    screens = split_into_screens(input_text)
+    
+    for i, screen in enumerate(screens):
+        with st.container():
+            st.markdown(f"**Skärm {i+1}**")
+            col1, col2, col3 = st.columns([1, 6, 1])
+            with col2:
+                st.text("14:38")
+                st.markdown("← Tillbaka | Dela artikeln")
+                st.markdown("---")
+                st.markdown(screen)
+                st.markdown("---")
+                st.text("Footer")
+            st.markdown("---")
+
+# Lägg till CSS för att begränsa bredden och centrera innehållet
+st.markdown(f"""
+    <style>
+        .reportview-container .main .block-container{{
+            max-width: {screen_size['width']}px;
+        }}
+    </style>
+""", unsafe_allow_html=True)
