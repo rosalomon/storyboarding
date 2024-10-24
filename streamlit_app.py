@@ -24,7 +24,7 @@ screen_size = iphone_sizes[iphone_model]
 input_text = st.text_area("Klistra in din text här:", height=300)
 
 # CSS-styling och JavaScript för att simulera en mobilvy
-st.markdown(f"""
+css_and_js = f"""
     <style>
     .main {{
         max-width: 430px;
@@ -146,13 +146,15 @@ st.markdown(f"""
     </script>
     
     <div id="scrolls-container"></div>
-    """, unsafe_allow_html=True)
+"""
+
+st.markdown(css_and_js, unsafe_allow_html=True)
 
 if input_text:
     st.markdown(f"""
     <div class="mobile-screen">
         <div class="content-box">
-            <div class="article-text">{input_text.replace('\\n', '<br>')}</div>
+            <div class="article-text">{input_text.replace('\n', '<br>')}</div>
         </div>
     </div>
     <script>
