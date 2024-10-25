@@ -50,11 +50,11 @@ if input_text:
             col1, col2, col3 = st.columns([1, 6, 1])
             with col2:
                 
-                st.markdown("Status bar")
+                st.markdown("*Status bar*")
                 st.markdown("---")
                 st.markdown(screen)
                 st.markdown("---")
-                st.text("ANNAT INNEHÅLL")
+                st.text("*ANNAT INNEHÅLL*")
             st.markdown("---")
 
 # Lägg till CSS för att begränsa bredden och centrera innehållet
